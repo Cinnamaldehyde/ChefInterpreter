@@ -80,6 +80,10 @@ public class Kitchen {
 				case Verb :
 					if (ingredients.get(m.ingredient) == null)
 						throw new ChefException(ChefException.METHOD, recipe, m.n, m.type.toString(), "Ingredient not found: "+m.ingredient);
+				case MakeSure :
+					if (ingredients.get(m.ingredient) == null)
+						throw new ChefException(ChefException.METHOD, recipe, m.n, m.type.toString(), "Ingredient not found: "+m.ingredient);
+			
 			}
 			switch (m.type) {
 				case Take : 
@@ -181,6 +185,29 @@ public class Kitchen {
 					break;
 				case Remember :
 					break;
+				//------------------------------------------------------------------------------
+				case MakeSure :
+					int end = i+1;
+					for (; end < methods.size(); end++)
+						if (sameBooly(m.booly, methods.get(end).booly) && methods.get(end).type == Type.MakeSureUntil)
+							break;
+					if (end == methods.size()) 
+						throw new ChefException(ChefException.METHOD, m.n, m.type.toString(), "End of If statement not found.");
+					if (ingredients.get(m.ingredient).getAmount() <= 0) {
+						i = end + 1;
+						continue methodloop;
+					}
+					else
+						loops.addFirst(new LoopData(i, end, m.verb));
+					break;
+				case MakeSureUntil :
+					if (!sameVerb(loops.peek().verb, m.verb))
+						throw new ChefException(ChefException.METHOD, m.n, m.type.toString(), "Wrong loop end statement found.");
+					if (ingredients.get(m.ingredient) != null)
+						ingredients.get(m.ingredient).setAmount(ingredients.get(m.ingredient).getAmount() - 1);
+					i = loops.pollFirst().from;
+					continue methodloop;
+				//------------------------------------------------------------------------------
 				default :
 					throw new ChefException(ChefException.METHOD, m.n, m.type.toString(), "Unsupported method found!");
 			}
@@ -205,6 +232,19 @@ public class Kitchen {
 				verb.equals(imp+"ed") || //monitor ~ monitored
 				verb.equals(imp+(imp.charAt(L-1))+"ed") || //stir ~ stirred
 				(imp.charAt(L-1) == 'y' && verb.equals(imp.substring(0, L-1)+"ied")); //carry ~ carried
+	}
+	private boolean sameBooly(String imp, String booly) {
+		if (booly == null || imp == null)
+			return false;
+		booly = booly.toLowerCase();
+		imp = imp.toLowerCase();
+		int L = imp.length();
+		return booly.equals(imp) || //A = A
+				booly.equals(imp+"n") || //shake ~ shaken
+				booly.equals(imp+"d") || //prepare ~ prepared
+				booly.equals(imp+"ed") || //monitor ~ monitored
+				booly.equals(imp+(imp.charAt(L-1))+"ed") || //stir ~ stirred
+				(imp.charAt(L-1) == 'y' && booly.equals(imp.substring(0, L-1)+"ied")); //carry ~ carried
 	}
 
 	private class LoopData {
