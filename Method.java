@@ -26,7 +26,8 @@ public class Method {
 		SetAside,
 		Serve,
 		Refrigerate,
-		Remember
+		Remember,
+		MakeSure
 	}
 	
 	public String ingredient;
@@ -37,6 +38,7 @@ public class Method {
 	public String verb;
 	public Type type;
 	public int n;
+	public boolean booly;
 	
 	public Method(String line, int n) throws ChefException {
 		line = line.trim();
@@ -59,6 +61,8 @@ public class Method {
 				Pattern.compile("^Suggestion: (.*).$").matcher(line),
 				Pattern.compile("^([a-zA-Z]+)( the ([a-zA-Z ]+))? until ([a-zA-Z]+).$").matcher(line),
 				Pattern.compile("^([a-zA-Z]+) the ([a-zA-Z ]+).$").matcher(line)
+				Pattern.compile("^Make sure the ([a-zA-Z ]+))? is  ([a-zA-Z]+).$ until ([a-zA-Z]+).$").matcher(line),
+				Pattern.compile("^Make sure the ([a-zA-Z ]+))? is  ([a-zA-Z]+).$").matcher(line),
 				}; 
 		if (matchers[0].find()) {
 			ingredient = matchers[0].group(1);
@@ -133,6 +137,16 @@ public class Method {
 			type = Type.Verb;
 			verb = matchers[16].group(1);
 			ingredient = matchers[16].group(2);
+		}
+		else if (matchers[17].find()) {
+			type = Type.MakeSureUntil;
+			booly = matchers[17].group(4);
+			ingredient = matcher[17].group(3);
+		}
+		else if (matchers[18].find()) {
+			type = Type.MakeSure;
+			ingredient = matchers[18].group(1);
+			booly = matchers[18].group(2);
 		}
 		else
 			throw new ChefException(ChefException.METHOD, n, line, "Unsupported method found!");
