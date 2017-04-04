@@ -27,6 +27,7 @@ public class Method {
 		Serve,
 		Refrigerate,
 		Remember,
+		MakeSureUntil
 		MakeSure
 	}
 	
